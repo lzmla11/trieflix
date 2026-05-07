@@ -11,7 +11,7 @@ El proyecto implementa una estructura basada en Tries y trigramas para permitir 
 ## Integrantes
 - Nombre 1
 - Nombre 2
-- Nombre 3
+- Humberto Ricardo Velito Neira
 - Percy Castro Gómez  
 
 ## Objetivos
