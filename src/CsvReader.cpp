@@ -59,7 +59,7 @@ std::vector<Movie> CsvReader::readMovies(const std::string& filename) {
         std::vector<std::string> fields =
             parseCSVLine(line);
 
-        if (fields.size() < 8) {
+        if (fields.size() < 8 || fields[1].empty()) {
             continue;
         }
 
@@ -75,15 +75,17 @@ std::vector<Movie> CsvReader::readMovies(const std::string& filename) {
 
         movie.title =
             Utils::cleanText(fields[1]);
+        movie.origin = 
+            Utils::cleanText(fields[2]);
 
         movie.director =
             Utils::cleanText(fields[3]);
 
         movie.cast =
-            Utils::cleanText(fields[4]);
+            fields[4].empty() ? "" : Utils::cleanText(fields[4]);
 
         movie.genre =
-            Utils::cleanText(fields[5]);
+            fields[5].empty() ? "unknown" : Utils::cleanText(fields[5]);
 
         movie.plot =
             Utils::cleanText(fields[7]);
