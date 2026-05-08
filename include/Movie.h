@@ -2,13 +2,18 @@
 
 #include <string>
 
+using namespace std;
+
 class Movie {
 public:
-    int releaseYear;
-    std::string title;
-    std::string origin;
-    std::string director;
-    std::string cast;
-    std::string genre;
-    std::string plot;
+    int id          = 0;
+    int releaseYear = 0;
+    string title;
+    string origin;
+    string director;
+    string cast;
+    string genre;
+    string plot;
+    int  likes      = 0;
+    bool watchLater = false;
 };

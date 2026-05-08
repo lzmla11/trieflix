@@ -10,7 +10,7 @@ El proyecto implementa una estructura basada en Tries y trigramas para permitir 
 
 ## Integrantes
 - Nombre 1
-- Nombre 2
+- Edmundo Andre Centti Torres
 - Humberto Ricardo Velito Neira
 - Percy Castro Gómez  
 

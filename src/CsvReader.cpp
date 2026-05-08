@@ -1,94 +1,71 @@
 #include "../include/CsvReader.h"
 #include "../include/Utils.h"
-
 #include <fstream>
 #include <iostream>
 
-std::vector<std::string> CsvReader::parseCSVLine(const std::string& line) {
+using namespace std;
 
-    std::vector<std::string> fields;
-
-    std::string currentField;
-
+vector<string> CsvReader::parseCSVLine(const string& line) {
+    vector<string> fields;
+    string currentField;
     bool insideQuotes = false;
 
     for (char c : line) {
-
         if (c == '"') {
             insideQuotes = !insideQuotes;
-        }
-
-        else if (c == ',' && !insideQuotes) {
-
+        } else if (c == ',' && !insideQuotes) {
             fields.push_back(currentField);
-
             currentField.clear();
-        }
-
-        else {
+        } else {
             currentField += c;
         }
     }
 
     fields.push_back(currentField);
-
     return fields;
 }
 
-std::vector<Movie> CsvReader::readMovies(const std::string& filename) {
-
-    std::vector<Movie> movies;
-
-    std::ifstream file(filename);
+vector<Movie> CsvReader::readMovies(const string& filename) {
+    vector<Movie> movies;
+    ifstream file(filename);
 
     if (!file.is_open()) {
-
-        std::cerr << "Error opening file: "
-                  << filename << std::endl;
-
+        cerr << "Error opening file: " << filename << endl;
         return movies;
     }
 
-    std::string line;
+    string line;
+    getline(file, line);
 
-    // skip header
-    std::getline(file, line);
+    while (getline(file, line)) {
+        int quoteCount = 0;
+        for (char c : line) if (c == '"') quoteCount++;
 
-    while (std::getline(file, line)) {
-
-        std::vector<std::string> fields =
-            parseCSVLine(line);
-
-        if (fields.size() < 8 || fields[1].empty()) {
-            continue;
+        while (quoteCount % 2 != 0 && !file.eof()) {
+            string nextLine;
+            getline(file, nextLine);
+            line += ' ' + nextLine;
+            for (char c : nextLine) if (c == '"') quoteCount++;
         }
+
+        vector<string> fields = parseCSVLine(line);
+
+        if (fields.size() < 8 || fields[1].empty()) continue;
 
         Movie movie;
 
         try {
-            movie.releaseYear =
-                std::stoi(fields[0]);
-        }
-        catch (...) {
+            movie.releaseYear = stoi(fields[0]);
+        } catch (...) {
             movie.releaseYear = 0;
         }
 
-        movie.title =
-            Utils::cleanText(fields[1]);
-        movie.origin = 
-            Utils::cleanText(fields[2]);
-
-        movie.director =
-            Utils::cleanText(fields[3]);
-
-        movie.cast =
-            fields[4].empty() ? "" : Utils::cleanText(fields[4]);
-
-        movie.genre =
-            fields[5].empty() ? "unknown" : Utils::cleanText(fields[5]);
-
-        movie.plot =
-            Utils::cleanText(fields[7]);
+        movie.title    = fields[1];
+        movie.origin   = fields[2];
+        movie.director = fields[3].empty() ? "Unknown" : fields[3];
+        movie.cast     = fields[4].empty() ? ""        : fields[4];
+        movie.genre    = fields[5].empty() ? "unknown" : fields[5];
+        movie.plot     = fields[7];
 
         movies.push_back(movie);
     }

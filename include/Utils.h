@@ -3,14 +3,11 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 namespace Utils {
-
-    std::string toLowerCase(const std::string& text);
-
-    std::string removePunctuation(const std::string& text);
-
-    std::string normalizeSpaces(const std::string& text);
-
-    std::string cleanText(const std::string& text);
-
+    string toLowerCase(const string& text);
+    string removePunctuation(const string& text);
+    string normalizeSpaces(const string& text);
+    string cleanText(const string& text);
 }

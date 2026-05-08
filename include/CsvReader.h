@@ -4,10 +4,12 @@
 #include <vector>
 #include "Movie.h"
 
+using namespace std;
+
 class CsvReader {
-private: 
-	std::vector<std::string> parseCSVLine(const std::string& line); 
+private:
+	vector<string> parseCSVLine(const string& line);
 
 public:
-	std::vector<Movie> readMovies(const std::string& filename); 
+	vector<Movie> readMovies(const string& filename);
 };
