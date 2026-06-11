@@ -41,15 +41,15 @@ namespace Utils {
 
 			if (std::isspace(static_cast<unsigned char>(c))) {
 
-		    	if (!previousWasSpace) {
-				result += ' ';
-				previousWasSpace = true;
-		    	}
+				if (!previousWasSpace) {
+					result += ' ';
+					previousWasSpace = true;
+				}
 
 			} else {
 
-		    		result += c;
-		    		previousWasSpace = false;
+				result += c;
+				previousWasSpace = false;
 			}
 	    	}
 
