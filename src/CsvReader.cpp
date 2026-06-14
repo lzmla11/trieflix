@@ -65,6 +65,7 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
         movie.director = fields[3].empty() ? "unknown" : Utils::cleanText(fields[3]);
         movie.cast     = fields[4].empty() ? ""        : Utils::cleanText(fields[4]);
         movie.genre    = fields[5].empty() ? "unknown" : Utils::cleanText(fields[5]);
+        movie.wikiPage = fields[6].empty() ? "unknown" : fields[6]; 
         movie.plot     = Utils::cleanText(fields[7]);
 
         movies.push_back(movie);

@@ -13,6 +13,7 @@ public:
     string director;
     string cast;
     string genre;
+    string wikiPage; 
     string plot;
     int  likes      = 0;
     bool watchLater = false;
