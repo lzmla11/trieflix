@@ -2,6 +2,8 @@
 #include <cctype>
 #include <sstream>
 
+using namespace std; 
+
 namespace Utils {
 
     	string toLowerCase(const string& text) {

@@ -60,13 +60,13 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
             movie.releaseYear = 0;
         }
 
-        movie.title    = Utils::cleanText(fields[1]);
-        movie.origin   = Utils::cleanText(fields[2]);
-        movie.director = fields[3].empty() ? "unknown" : Utils::cleanText(fields[3]);
-        movie.cast     = fields[4].empty() ? ""        : Utils::cleanText(fields[4]);
-        movie.genre    = fields[5].empty() ? "unknown" : Utils::cleanText(fields[5]);
+        movie.title    = fields[1];
+        movie.origin   = fields[2];
+        movie.director = fields[3].empty() ? "unknown" : fields[3];
+        movie.cast     = fields[4].empty() ? ""        : fields[4];
+        movie.genre    = fields[5].empty() ? "unknown" : fields[5];
         movie.wikiPage = fields[6].empty() ? "unknown" : fields[6]; 
-        movie.plot     = Utils::cleanText(fields[7]);
+        movie.plot     = fields[7];
 
         movies.push_back(movie);
     }

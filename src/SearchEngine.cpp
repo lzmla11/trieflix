@@ -26,7 +26,7 @@ bool SearchEngine::load(const string& filepath) {
 
 void SearchEngine::indexMovie(const Movie& m) {
     auto insertField = [&](const string& field) {
-        for (const string& word : Trie::tokenize(field))
+        for (const string& word : Utils::tokenize(field))
             trie.insert(word, m.id);
     };
 
@@ -38,22 +38,14 @@ void SearchEngine::indexMovie(const Movie& m) {
 }
 
 vector<const Movie*> SearchEngine::searchText(const string& query, int limit) const {
-    vector<string> words = SuffixTrie::tokenize(query);
+    vector<string> words = Utils::tokenize(Utils::cleanText(query));
     if (words.empty()) return {};
 
     unordered_map<int, double> scores;
 
     for (const string& word : words) {
-        vector<int> ids = trie.searchBySubstring(word);
+        vector<int> ids = trie.searchByPrefix(word);
         for (int id : ids)
-            scores[id] += 1.0;
-    }
-
-    if (scores.empty()) {
-        string flat;
-        for (unsigned char c : query)
-            if (isalnum(c)) flat += tolower(c);
-        for (int id : trie.searchByPrefix(flat))
             scores[id] += 1.0;
     }
 

@@ -4,21 +4,19 @@
 #include <vector>
 #include <unordered_map>
 #include "Movie.h"
-#include "Trie.h"
-
-using namespace std;
+#include "SuffixTrie.h"
 
 class SearchEngine {
 public:
-    vector<Movie> movies;
+    std::vector<Movie> movies;
 
-    bool load(const string& filepath);
-    vector<const Movie*> searchText(const string& query, int limit = 5) const;
-    vector<const Movie*> searchByTag(const string& tag, const string& value, int limit = 5) const;
+    bool load(const std::string& filepath);
+    std::vector<const Movie*> searchText(const std::string& query, int limit = 5) const;
+    std::vector<const Movie*> searchByTag(const std::string& tag, const std::string& value, int limit = 5) const;
 
 private:
-    Trie trie;
+    SuffixTrie trie;
 
     void indexMovie(const Movie& m);
-    vector<const Movie*> topMovies(const unordered_map<int, double>& scores, int limit) const;
+    std::vector<const Movie*> topMovies(const std::unordered_map<int, double>& scores, int limit) const;
 };

@@ -2,19 +2,17 @@
 
 #include <string>
 
-using namespace std;
-
-class Movie {
+struct Movie {
 public:
     int id          = 0;
     int releaseYear = 0;
-    string title;
-    string origin;
-    string director;
-    string cast;
-    string genre;
-    string wikiPage; 
-    string plot;
+    std::string title;
+    std::string origin;
+    std::string director;
+    std::string cast;
+    std::string genre;
+    std::string wikiPage; 
+    std::string plot;
     int  likes      = 0;
     bool watchLater = false;
 };

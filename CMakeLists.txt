@@ -10,7 +10,7 @@ include_directories(include)
 add_executable(
 	trieflix
 	src/main.cpp
-    	src/Trie.cpp
+        src/SuffixTrie.cpp
     	src/SearchEngine.cpp
     	src/CsvReader.cpp
     	src/Utils.cpp
