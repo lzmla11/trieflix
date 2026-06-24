@@ -1,10 +1,11 @@
 #include "../include/Utils.h"
 #include <cctype>
+#include <sstream>
 
 namespace Utils {
 
-    	std::string toLowerCase(const std::string& text) {
-		std::string result;
+    	string toLowerCase(const string& text) {
+		string result;
 
         	for (char c : text) {
         		result += std::tolower(static_cast<unsigned char>(c));
@@ -13,13 +14,13 @@ namespace Utils {
         	return result;
 	}
 	
-    	std::string removePunctuation(const std::string& text) {
-    		std::string result;
+    	string removePunctuation(const string& text) {
+    		string result;
 
     		for (char c : text) {
 
-        		if (std::isalnum(static_cast<unsigned char>(c)) ||
-            	    	std::isspace(static_cast<unsigned char>(c))) {
+        		if (isalnum(static_cast<unsigned char>(c)) ||
+            	    	isspace(static_cast<unsigned char>(c))) {
 
             			result += c;
 
@@ -31,15 +32,15 @@ namespace Utils {
     		return result;
     	}
 
-	std::string normalizeSpaces(const std::string& text) {
+	string normalizeSpaces(const string& text) {
 
-		std::string result;
+		string result;
 
 	    	bool previousWasSpace = false;
 
 	    	for (char c : text) {
 
-			if (std::isspace(static_cast<unsigned char>(c))) {
+			if (isspace(static_cast<unsigned char>(c))) {
 
 				if (!previousWasSpace) {
 					result += ' ';
@@ -66,9 +67,9 @@ namespace Utils {
 	    	return result;
 	}
 
-	std::string cleanText(const std::string& text) {
+	string cleanText(const string& text) {
 
-    		std::string cleaned = toLowerCase(text);
+    		string cleaned = toLowerCase(text);
 
     		cleaned = removePunctuation(cleaned);
 
@@ -76,7 +77,22 @@ namespace Utils {
 
     		return cleaned;
 	}
+    
+    vector<string> tokenize(const string& text) {
+        vector<string> tokens;  
+        
+        istringstream ss(text); 
 
+        string word; 
+
+        while (ss >> word) {
+            if (word.size() >= 3) {
+                tokens.push_back(word); 
+            }
+        }
+
+        return tokens; 
+    }
 }
 
 

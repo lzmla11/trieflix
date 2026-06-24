@@ -38,7 +38,7 @@ void SearchEngine::indexMovie(const Movie& m) {
 }
 
 vector<const Movie*> SearchEngine::searchText(const string& query, int limit) const {
-    vector<string> words = Trie::tokenize(query);
+    vector<string> words = SuffixTrie::tokenize(query);
     if (words.empty()) return {};
 
     unordered_map<int, double> scores;
