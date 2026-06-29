@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <iostream>
 
+using namespace std; 
+
 bool SearchEngine::load(const std::string& filepath) {
     CsvReader reader;
     movies = reader.readMovies(filepath);
@@ -45,7 +47,6 @@ void SearchEngine::indexMovie(const Movie& m) {
     indexInTrie(m.director, directorTrie);
     indexInTrie(m.cast, castTrie);
     
-    indexInGeneral(m.genre);
     indexInGeneral(m.plot);
 }
 
@@ -56,7 +57,7 @@ vector<const Movie*> SearchEngine::searchText(const string& query, int limit) co
     unordered_map<int, double> scores;
 
     for (const string& word : words) {
-        vector<int> ids = trie.searchByPrefix(word);
+        vector<int> ids = generalTrie.searchByPrefix(word);
         for (int id : ids)
             scores[id] += 1.0;
     }
@@ -68,19 +69,37 @@ vector<const Movie*> SearchEngine::searchByTag(const string& tag,
                                                 const string& value,
                                                 int limit) const {
     string normVal = Utils::cleanText(value);
+    if (normVal.empty()) return {};
+
+    const SuffixTrie* target = nullptr;
+
+    if      (tag == "title"                  ) target = &titleTrie;
+    else if (tag == "director"               ) target = &directorTrie;
+    else if (tag == "cast" || tag == "casting") target = &castTrie;
+
     unordered_map<int, double> scores;
 
-    for (const Movie& m : movies) {
-        string field;
+   if (target) {
+        // En lugar de buscar la frase junta, la tokenizamos por si pusieron nombres compuestos (ej: "Christopher Nolan")
+        vector<string> words = Utils::tokenize(normVal);
+        if (words.empty()) return {};
 
-        if      (tag == "director")                 field = Utils::cleanText(m.director);
-        else if (tag == "cast" || tag == "casting") field = Utils::cleanText(m.cast);
-        else if (tag == "genre" || tag == "genero") field = Utils::cleanText(m.genre);
-        else if (tag == "year"  || tag == "anio")   field = to_string(m.releaseYear);
-        else                                        field = Utils::cleanText(m.title);
+        for (const string& word : words) {
+            vector<int> ids = target->searchByPrefix(word);
+            for (int id : ids)
+                scores[id] += 1.0; // Acumula frecuencias por cada palabra encontrada en el TAG
+        }
+    } else {
+        // Tag no reconocido (year, genre, etc.) → fallback lineal
+        for (const Movie& m : movies) {
+            string field;
+            if      (tag == "genre" || tag == "genero") field = Utils::cleanText(m.genre);
+            else if (tag == "year"  || tag == "anio"  ) field = to_string(m.releaseYear);
+            else                                        field = Utils::cleanText(m.title);
 
-        if (field.find(normVal) != string::npos)
-            scores[m.id] += 1.0;
+            if (field.find(normVal) != string::npos)
+                scores[m.id] += 1.0;
+        }
     }
 
     return topMovies(scores, limit);
