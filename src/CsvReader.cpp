@@ -35,9 +35,9 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
     }
 
     string line;
-    getline(file, line);
+    getline(file, line); // saltar header
 
-    int currentId = 0; 
+    int currentId = 0;
 
     while (getline(file, line)) {
         int quoteCount = 0;
@@ -56,8 +56,6 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
 
         Movie movie;
 
-        movie.id = currentId++; 
-
         try {
             movie.releaseYear = stoi(fields[0]);
         } catch (...) {
@@ -69,8 +67,11 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
         movie.director = fields[3].empty() ? "unknown" : fields[3];
         movie.cast     = fields[4].empty() ? ""        : fields[4];
         movie.genre    = fields[5].empty() ? "unknown" : fields[5];
-        movie.wikiPage = fields[6].empty() ? "unknown" : fields[6]; 
+        movie.wikiPage = fields[6].empty() ? "unknown" : fields[6];
         movie.plot     = fields[7];
+
+        // ID se asigna al final, solo a filas válidas
+        movie.id = currentId++;
 
         movies.push_back(movie);
     }

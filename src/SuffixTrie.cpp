@@ -22,9 +22,8 @@ void SuffixTrie::insert(const string& word, int movieId) {
                 cur->children[c] = make_unique<SuffixTrieNode>();
             cur = cur->children[c].get();
         }
-        vector<int>& ids = cur->movieIds;
-        if (ids.empty() || ids.back() != movieId)
-            ids.push_back(movieId);
+        // unordered_set ignora duplicados automáticamente
+        cur->movieIds.insert(movieId);
     }
 }
 

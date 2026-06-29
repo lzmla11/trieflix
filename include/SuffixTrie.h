@@ -2,25 +2,23 @@
 
 #include <string>
 #include <vector>
-#include <map>
-#include <memory>
+#include <unordered_map>
 #include <unordered_set>
+#include <memory>
 
 struct SuffixTrieNode {
-    std::map<char, std::unique_ptr<SuffixTrieNode>> children;
-    std::vector<int> movieIds;
+    std::unordered_map<char, std::unique_ptr<SuffixTrieNode>> children;
+    std::unordered_set<int> movieIds; // set evita duplicados sin chequeos manuales
 };
 
 class SuffixTrie {
 public:
     SuffixTrie();
-
     void insert(const std::string& word, int movieId);
     std::vector<int> searchByPrefix(const std::string& prefix) const;
 
 private:
     std::unique_ptr<SuffixTrieNode> root;
-
     std::vector<std::string> generateSuffixes(const std::string& word) const;
     void collectIds(const SuffixTrieNode* node,
                     std::unordered_set<int>& seen,
