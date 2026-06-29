@@ -105,24 +105,42 @@ vector<const Movie*> SearchEngine::searchByTag(const string& tag,
     return topMovies(scores, limit);
 }
 
-vector<const Movie*> SearchEngine::topMovies(
-    const unordered_map<int, double>& scores, int limit) const {
+std::vector<const Movie*> SearchEngine::topMovies(
+    const std::unordered_map<int, double>& scores, int limit) const {
 
-    vector<pair<double, int>> ranked;
+    // Paso 1: Volcamos el mapa a un vector de pares (Puntaje, ID)
+    std::vector<std::pair<double, int>> ranked;
     ranked.reserve(scores.size());
 
-    for (const auto& [id, sc] : scores)
+    for (const auto& [id, sc] : scores) {
         ranked.push_back({sc, id});
+    }
 
-    sort(ranked.begin(), ranked.end(),
-         [](const pair<double,int>& a, const pair<double,int>& b) {
-             return a.first > b.first;
+    // Paso 2: Ordenamos de mayor a menor puntuación y desempatamos por LIKES
+    // NOTA: Usamos [this] al inicio para que la lambda tenga acceso al vector 'movies'
+    std::sort(ranked.begin(), ranked.end(),
+         [this](const std::pair<double, int>& a, const std::pair<double, int>& b) {
+             // Criterio principal: Mayor puntaje de palabras clave primero
+             if (a.first != b.first) {
+                 return a.first > b.first;
+             }
+             
+             // Criterio de desempate: Si tienen los mismos puntos, 
+             // la película con más likes va primero.
+             return movies[a.second].likes > movies[b.second].likes;
          });
 
-    vector<const Movie*> result;
-    int n = min(limit, (int)ranked.size());
-    for (int i = 0; i < n; i++)
-        result.push_back(&movies[ranked[i].second]);
+    // Paso 3: Calculamos el corte exacto
+    int numResults = std::min(limit, static_cast<int>(ranked.size()));
+
+    // Paso 4: Construimos el resultado con punteros reales
+    std::vector<const Movie*> result;
+    result.reserve(numResults);
+
+    for (int i = 0; i < numResults; i++) {
+        int winnerId = ranked[i].second;
+        result.push_back(&movies[winnerId]);
+    }
 
     return result;
 }
