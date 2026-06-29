@@ -51,15 +51,67 @@ void SearchEngine::indexMovie(const Movie& m) {
 }
 
 vector<const Movie*> SearchEngine::searchText(const string& query, int limit) const {
-    vector<string> words = Utils::tokenize(Utils::cleanText(query));
+
+    // Limpieza de la consulta completa (se usará para el bono de frase exacta)
+    string cleanQuery = Utils::cleanText(query);
+
+    // Tokenización de la consulta limpia
+    vector<string> words = Utils::tokenize(cleanQuery);
     if (words.empty()) return {};
 
     unordered_map<int, double> scores;
 
+    // Bucle de puntuación inteligente por cada palabra
     for (const string& word : words) {
-        vector<int> ids = generalTrie.searchByPrefix(word);
-        for (int id : ids)
-            scores[id] += 1.0;
+
+        if (Utils::isStopWord(word)) {
+
+            // Es una Stop Word: solo buscamos en títulos con puntaje mínimo
+            // para no contaminar los resultados con palabras vacías
+            vector<int> titleIds = titleTrie.searchByPrefix(word);
+            for (int movieId : titleIds) {
+                scores[movieId] += 0.1;
+            }
+
+        } else {
+
+            // Es una palabra clave: ponderación completa por campo
+
+            // Coincidencia en Título: Premio Mayor
+            vector<int> titleIds = titleTrie.searchByPrefix(word);
+            for (int movieId : titleIds) {
+                scores[movieId] += 10.0;
+            }
+
+            // Coincidencia en Director: Premio Alto
+            vector<int> directorIds = directorTrie.searchByPrefix(word);
+            for (int movieId : directorIds) {
+                scores[movieId] += 5.0;
+            }
+
+            // Coincidencia en Reparto: Premio Alto
+            vector<int> castIds = castTrie.searchByPrefix(word);
+            for (int movieId : castIds) {
+                scores[movieId] += 5.0;
+            }
+
+            // Coincidencia en Índice General (sinopsis, etc.): Premio Base
+            vector<int> generalIds = generalTrie.searchByPrefix(word);
+            for (int movieId : generalIds) {
+                scores[movieId] += 1.0;
+            }
+        }
+    }
+
+    // Bono de Frase Exacta: si el título limpio contiene la consulta completa
+    for (auto& [movieId, currentScore] : scores) {
+        const Movie& currentMovie = movies[movieId];
+        string cleanTitle = Utils::cleanText(currentMovie.title);
+
+        if (cleanTitle.find(cleanQuery) != string::npos) {
+            // La consulta completa aparece literalmente en el título
+            currentScore += 100.0;
+        }
     }
 
     return topMovies(scores, limit);
@@ -68,38 +120,81 @@ vector<const Movie*> SearchEngine::searchText(const string& query, int limit) co
 vector<const Movie*> SearchEngine::searchByTag(const string& tag,
                                                 const string& value,
                                                 int limit) const {
+
     string normVal = Utils::cleanText(value);
     if (normVal.empty()) return {};
 
     const SuffixTrie* target = nullptr;
 
-    if      (tag == "title"                  ) target = &titleTrie;
-    else if (tag == "director"               ) target = &directorTrie;
-    else if (tag == "cast" || tag == "casting") target = &castTrie;
+    if (tag == "title") {
+        target = &titleTrie;
+    } else if (tag == "director") {
+        target = &directorTrie;
+    } else if (tag == "cast" || tag == "casting") {
+        target = &castTrie;
+    }
 
     unordered_map<int, double> scores;
 
-   if (target) {
-        // En lugar de buscar la frase junta, la tokenizamos por si pusieron nombres compuestos (ej: "Christopher Nolan")
+    if (target) {
+        // === RUTA OPTIMIZADA: BÚSQUEDA POR PALABRAS EN TRIES ===
         vector<string> words = Utils::tokenize(normVal);
         if (words.empty()) return {};
 
         for (const string& word : words) {
-            vector<int> ids = target->searchByPrefix(word);
-            for (int id : ids)
-                scores[id] += 1.0; // Acumula frecuencias por cada palabra encontrada en el TAG
+            if (Utils::isStopWord(word)) {
+                // Stop Word: puntaje mínimo para no contaminar el ranking
+                vector<int> ids = target->searchByPrefix(word);
+                for (int movieId : ids) {
+                    scores[movieId] += 0.1;
+                }
+            } else {
+                // Palabra clave: puntaje completo de campo
+                vector<int> ids = target->searchByPrefix(word);
+                for (int movieId : ids) {
+                    scores[movieId] += 10.0;
+                }
+            }
         }
-    } else {
-        // Tag no reconocido (year, genre, etc.) → fallback lineal
-        for (const Movie& m : movies) {
-            string field;
-            if      (tag == "genre" || tag == "genero") field = Utils::cleanText(m.genre);
-            else if (tag == "year"  || tag == "anio"  ) field = to_string(m.releaseYear);
-            else                                        field = Utils::cleanText(m.title);
 
-            if (field.find(normVal) != string::npos)
-                scores[m.id] += 1.0;
+        // Bono de Frase Exacta: requerido porque arriba buscamos palabras sueltas
+        for (auto& [movieId, currentScore] : scores) {
+            const Movie& currentMovie = movies[movieId];
+
+            string cleanField;
+            if (tag == "title") {
+                cleanField = Utils::cleanText(currentMovie.title);
+            } else if (tag == "director") {
+                cleanField = Utils::cleanText(currentMovie.director);
+            } else {
+                cleanField = Utils::cleanText(currentMovie.cast);
+            }
+
+            if (cleanField.find(normVal) != string::npos) {
+                currentScore += 100.0;
+            }
         }
+
+    } else {
+        // === RUTA FALLBACK: ESCANEO LINEAL (genre, year, etc.) ===
+        for (const Movie& currentMovie : movies) {
+
+            string cleanField;
+            if (tag == "genre" || tag == "genero") {
+                cleanField = Utils::cleanText(currentMovie.genre);
+            } else if (tag == "year" || tag == "anio") {
+                cleanField = to_string(currentMovie.releaseYear);
+            } else {
+                cleanField = Utils::cleanText(currentMovie.title);
+            }
+
+            // Al usar .find() con la variable completa 'normVal', la coincidencia ya es exacta.
+            // Asignamos el punto base (1.0) y el bono (100.0) juntos = 101.0 puntos.
+            if (cleanField.find(normVal) != string::npos) {
+                scores[currentMovie.id] += 101.0;
+            }
+        }
+        // ¡Bucle redundante eliminado con éxito!
     }
 
     return topMovies(scores, limit);

@@ -1,6 +1,7 @@
 #include "../include/Utils.h"
 #include <cctype>
 #include <sstream>
+#include <unordered_set>
 
 using namespace std; 
 
@@ -95,6 +96,22 @@ namespace Utils {
 
         return tokens; 
     }
+
+    bool isStopWord(const std::string& word) {
+    static const std::unordered_set<std::string> stopWords = {
+        // Inglés
+        "the", "a", "an", "and", "of", "to", "in", "is", "it",
+        "that", "was", "for", "on", "are", "with", "his", "her",
+        "they", "at", "be", "this", "from", "or", "but", "not",
+        "have", "had", "he", "she", "you", "we", "by", "as",
+        // Español
+        "el", "la", "los", "las", "un", "una", "unos", "unas",
+        "y", "de", "en", "es", "que", "del", "por", "con",
+        "una", "su", "sus", "al", "se"
+    };
+
+    return stopWords.count(word) > 0;
+}
 }
 
 
