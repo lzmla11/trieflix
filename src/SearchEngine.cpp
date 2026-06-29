@@ -4,37 +4,49 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace std;
-
-bool SearchEngine::load(const string& filepath) {
+bool SearchEngine::load(const std::string& filepath) {
     CsvReader reader;
     movies = reader.readMovies(filepath);
 
     if (movies.empty()) {
-        cerr << "No se cargaron peliculas.\n";
+        std::cerr << "No se cargaron peliculas.\n";
         return false;
     }
 
-    for (int i = 0; i < (int)movies.size(); i++) {
-        movies[i].id = i;
-        indexMovie(movies[i]);
+    for (const auto& movie : movies) {
+        indexMovie(movie);
     }
 
-    cout << movies.size() << " peliculas cargadas.\n";
+    std::cout << movies.size() << " peliculas cargadas e indexadas exitosamente.\n";
     return true;
 }
 
 void SearchEngine::indexMovie(const Movie& m) {
-    auto insertField = [&](const string& field) {
-        for (const string& word : Utils::tokenize(field))
-            trie.insert(word, m.id);
+    auto indexInTrie = [&](const std::string& fieldText, SuffixTrie& specificTrie) {
+        std::string cleaned = Utils::cleanText(fieldText);
+        std::vector<std::string> tokens = Utils::tokenize(cleaned);
+        
+        for (const std::string& word : tokens) {
+            specificTrie.insert(word, m.id);
+            generalTrie.insert(word, m.id); 
+        }
     };
 
-    insertField(m.title);
-    insertField(m.director);
-    insertField(m.cast);
-    insertField(m.genre);
-    insertField(m.plot);
+    auto indexInGeneral = [&](const std::string& fieldText) {
+        std::string cleaned = Utils::cleanText(fieldText);
+        std::vector<std::string> tokens = Utils::tokenize(cleaned);
+        
+        for (const std::string& word : tokens) {
+            generalTrie.insert(word, m.id);
+        }
+    };
+
+    indexInTrie(m.title, titleTrie);
+    indexInTrie(m.director, directorTrie);
+    indexInTrie(m.cast, castTrie);
+    
+    indexInGeneral(m.genre);
+    indexInGeneral(m.plot);
 }
 
 vector<const Movie*> SearchEngine::searchText(const string& query, int limit) const {

@@ -37,6 +37,8 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
     string line;
     getline(file, line);
 
+    int currentId = 0; 
+
     while (getline(file, line)) {
         int quoteCount = 0;
         for (char c : line) if (c == '"') quoteCount++;
@@ -53,6 +55,8 @@ vector<Movie> CsvReader::readMovies(const string& filename) {
         if (fields.size() < 8 || fields[1].empty()) continue;
 
         Movie movie;
+
+        movie.id = currentId++; 
 
         try {
             movie.releaseYear = stoi(fields[0]);

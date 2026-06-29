@@ -15,7 +15,10 @@ public:
     std::vector<const Movie*> searchByTag(const std::string& tag, const std::string& value, int limit = 5) const;
 
 private:
-    SuffixTrie trie;
+    SuffixTrie titleTrie;
+    SuffixTrie directorTrie; 
+    SuffixTrie castTrie; 
+    SuffixTrie generalTrie; 
 
     void indexMovie(const Movie& m);
     std::vector<const Movie*> topMovies(const std::unordered_map<int, double>& scores, int limit) const;
