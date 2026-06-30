@@ -341,6 +341,8 @@ void searchTagFlow(SearchEngine& engine) {
         cout << "  [1] Titulo\n";
         cout << "  [2] Director\n";
         cout << "  [3] Elenco / Cast\n";
+        cout << "  [4] Genero\n";
+        cout << "  [5] Anio de estreno\n";
         cout << "  [0] Volver al Menu Principal\n";
         printSeparator();
 
@@ -355,8 +357,13 @@ void searchTagFlow(SearchEngine& engine) {
             tag = "director";
         } else if (opt == "3") {
             tag = "cast";
-        } else {
-            cout << "\n  [!] Opcion invalida. Por favor, selecciona un numero del 0 al 3.\n";
+        } else if (opt == "4") {
+            tag = "genre";
+        } else if (opt == "5"){
+            tag = "year";
+        }
+        else {
+            cout << "\n  [!] Opcion invalida. Por favor, selecciona un numero del 0 al 5.\n";
             getInput("  Presiona Enter para continuar...");
             continue;
         }
