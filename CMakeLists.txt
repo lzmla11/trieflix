@@ -18,3 +18,7 @@ add_executable(trieflix
     src/MoviePrinter.cpp
     src/ConsoleNotificationSystem.cpp
 )
+
+find_package(Threads REQUIRED)
+target_link_libraries(trieflix PRIVATE Threads::Threads)
+
