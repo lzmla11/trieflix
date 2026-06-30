@@ -22,6 +22,5 @@ private:
     SuffixTrie castTrie; 
     SuffixTrie generalTrie; 
 
-    void indexMovie(const Movie& m);
     std::vector<const Movie*> topMovies(const std::unordered_map<int, double>& scores, int limit) const;
 };
