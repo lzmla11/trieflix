@@ -13,10 +13,10 @@ std::string truncateText(const std::string& text, size_t maxLength) {
 void BaseMoviePrinter::print(int index, const Movie& movie) const {
     // Dibujamos exactamente la estructura limpia que ya tenías en tu main.cpp
     std::cout << " [" << index << "] " << truncateText(movie.title, 44)
-              << " (" << movie.releaseYear << ")\\n";
+              << " (" << movie.releaseYear << ")\n";
               
     std::cout << "      Dir: " << truncateText(movie.director, 28)
-              << "  |  " << truncateText(movie.genre, 18) << "\\n";
+              << "  |  " << truncateText(movie.genre, 18) << "\n";
 }
 
 // --- DECORADOR BASE ---
@@ -37,7 +37,7 @@ void LikeMovieDecorator::print(int index, const Movie& movie) const {
     
     // 2. Añadimos nuestra decoración si cumple con la condición
     if (movie.likes > 0) {
-        std::cout << "      [❤️] Likes de la comunidad: " << movie.likes << "\\n";
+        std::cout << "      [❤️] Likes de la comunidad: " << movie.likes << "\n";
     }
 }
 
@@ -48,6 +48,6 @@ void WatchLaterMovieDecorator::print(int index, const Movie& movie) const {
     
     // 2. Añadimos nuestra decoración si cumple con la condición
     if (movie.watchLater == true) {
-        std::cout << "      [⏳] Esta pelicula esta en tu lista de 'Ver mas tarde'\\n";
+        std::cout << "      [⏳] Esta pelicula esta en tu lista de 'Ver mas tarde'\n";
     }
 }

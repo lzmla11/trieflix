@@ -34,7 +34,7 @@ void SessionManager::setSearchEngine(SearchEngine* enginePointer) {
 
 void SessionManager::toggleWatchLater(int movieId) {
     if (searchEngine == nullptr) {
-        std::cerr << "Error: El SessionManager no tiene vinculado el SearchEngine.\\n";
+        std::cerr << "Error: El SessionManager no tiene vinculado el SearchEngine.\n";
         return;
     }
 
@@ -44,10 +44,10 @@ void SessionManager::toggleWatchLater(int movieId) {
             // Togleamos el estado booleano de forma tradicional e informativa
             if (currentMovie.watchLater == true) {
                 currentMovie.watchLater = false;
-                std::cout << "  Pelicula quitada de 'Ver mas tarde'.\\n";
+                std::cout << "  Pelicula quitada de 'Ver mas tarde'.\n";
             } else {
                 currentMovie.watchLater = true;
-                std::cout << "  Pelicula agregada a 'Ver mas tarde'.\\n";
+                std::cout << "  Pelicula agregada a 'Ver mas tarde'.\n";
             }
             // dispara notificación
             this->notifyWatchLaterChanged(movieId, currentMovie.watchLater);
@@ -58,7 +58,7 @@ void SessionManager::toggleWatchLater(int movieId) {
 
 void SessionManager::giveLikeToMovie(int movieId) {
     if (searchEngine == nullptr) {
-        std::cerr << "Error: El SessionManager no tiene vinculado el SearchEngine.\\n";
+        std::cerr << "Error: El SessionManager no tiene vinculado el SearchEngine.\n";
         return;
     }
 
@@ -66,7 +66,7 @@ void SessionManager::giveLikeToMovie(int movieId) {
     for (Movie& currentMovie : searchEngine->movies) {
         if (currentMovie.id == movieId) {
             currentMovie.likes = currentMovie.likes + 1;
-            std::cout << "  ¡Le diste un Like a la pelicula! Total de likes actuales: " << currentMovie.likes << "\\n";
+            std::cout << "  ¡Le diste un Like a la pelicula! Total de likes actuales: " << currentMovie.likes << "\n";
             
             // dispara la notificación 
             this->notifyLikeChanged(movieId, currentMovie.likes);

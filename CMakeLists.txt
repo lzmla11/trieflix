@@ -13,4 +13,8 @@ add_executable(trieflix
     src/SearchEngine.cpp
     src/CsvReader.cpp
     src/Utils.cpp
+    src/SessionManager.cpp
+    src/SearchQuery.cpp
+    src/MoviePrinter.cpp
+    src/ConsoleNotificationSystem.cpp
 )
