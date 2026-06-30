@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "Movie.h"
 #include "SuffixTrie.h"
+#include "SearchQuery.h"
 
 class SearchEngine {
 public:
@@ -13,6 +14,7 @@ public:
     bool load(const std::string& filepath);
     std::vector<const Movie*> searchText(const std::string& query, int limit = 5) const;
     std::vector<const Movie*> searchByTag(const std::string& tag, const std::string& value, int limit = 5) const;
+    std::vector<const Movie*> searchAdvanced(const SearchQuery& query, int limit = 5) const;
 
 private:
     SuffixTrie titleTrie;

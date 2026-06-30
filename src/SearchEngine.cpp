@@ -2,6 +2,7 @@
 #include "../include/CsvReader.h"
 #include "../include/Utils.h"
 #include <algorithm>
+#include <future>
 #include <iostream>
 
 using namespace std; 
@@ -11,43 +12,62 @@ bool SearchEngine::load(const std::string& filepath) {
     movies = reader.readMovies(filepath);
 
     if (movies.empty()) {
-        std::cerr << "No se cargaron peliculas.\n";
+        std::cerr << "No se cargaron peliculas.\\n";
         return false;
     }
 
-    for (const auto& movie : movies) {
-        indexMovie(movie);
-    }
+    std::cout << "Iniciando indexacion en paralelo (4 hilos)...\\n";
 
-    std::cout << movies.size() << " peliculas cargadas e indexadas exitosamente.\n";
+    // HILO 1: Indexar Títulos
+    auto threadTitle = std::async(std::launch::async, [this]() {
+        for (const Movie& m : movies) {
+            std::vector<std::string> tokens = Utils::tokenize(Utils::cleanText(m.title));
+            for (const std::string& word : tokens) {
+                titleTrie.insert(word, m.id);
+            }
+        }
+    });
+
+    // HILO 2: Indexar Directores
+    auto threadDirector = std::async(std::launch::async, [this]() {
+        for (const Movie& m : movies) {
+            std::vector<std::string> tokens = Utils::tokenize(Utils::cleanText(m.director));
+            for (const std::string& word : tokens) {
+                directorTrie.insert(word, m.id);
+            }
+        }
+    });
+
+    // HILO 3: Indexar Elenco (Cast)
+    auto threadCast = std::async(std::launch::async, [this]() {
+        for (const Movie& m : movies) {
+            std::vector<std::string> tokens = Utils::tokenize(Utils::cleanText(m.cast));
+            for (const std::string& word : tokens) {
+                castTrie.insert(word, m.id);
+            }
+        }
+    });
+
+    // HILO 4: Indexar Árbol General (Título + Director + Cast + Plot)
+    auto threadGeneral = std::async(std::launch::async, [this]() {
+        for (const Movie& m : movies) {
+            // Concatenamos los textos para el índice global de búsqueda descriptiva
+            std::string totalText = m.title + " " + m.director + " " + m.cast + " " + m.plot;
+            std::vector<std::string> tokens = Utils::tokenize(Utils::cleanText(totalText));
+            for (const std::string& word : tokens) {
+                generalTrie.insert(word, m.id);
+            }
+        }
+    });
+
+    // Sincronización (El hilo principal espera a que los 4 terminen su trabajo)
+    threadTitle.get();
+    threadDirector.get();
+    threadCast.get();
+    threadGeneral.get();
+
+    std::cout << movies.size() << " peliculas indexadas en paralelo con exito.\\n";
     return true;
-}
-
-void SearchEngine::indexMovie(const Movie& m) {
-    auto indexInTrie = [&](const std::string& fieldText, SuffixTrie& specificTrie) {
-        std::string cleaned = Utils::cleanText(fieldText);
-        std::vector<std::string> tokens = Utils::tokenize(cleaned);
-        
-        for (const std::string& word : tokens) {
-            specificTrie.insert(word, m.id);
-            generalTrie.insert(word, m.id); 
-        }
-    };
-
-    auto indexInGeneral = [&](const std::string& fieldText) {
-        std::string cleaned = Utils::cleanText(fieldText);
-        std::vector<std::string> tokens = Utils::tokenize(cleaned);
-        
-        for (const std::string& word : tokens) {
-            generalTrie.insert(word, m.id);
-        }
-    };
-
-    indexInTrie(m.title, titleTrie);
-    indexInTrie(m.director, directorTrie);
-    indexInTrie(m.cast, castTrie);
-    
-    indexInGeneral(m.plot);
 }
 
 vector<const Movie*> SearchEngine::searchText(const string& query, int limit) const {
@@ -238,4 +258,57 @@ std::vector<const Movie*> SearchEngine::topMovies(
     }
 
     return result;
+}
+
+std::vector<const Movie*> SearchEngine::searchAdvanced(const SearchQuery& query, int limit) const {
+    std::vector<const Movie*> basePool;
+
+    // Paso 1: Obtener un set inicial de películas candidatas
+    if (query.textKeyword.empty() == false) {
+        // Si hay palabra clave, usamos tu potente algoritmo indexado por SuffixTrie
+        basePool = this->searchText(query.textKeyword, 1000); 
+    } else {
+        // Si no hay palabra clave, partimos de todas las películas del sistema
+        for (const Movie& m : movies) {
+            basePool.push_back(&m);
+        }
+    }
+
+    // Paso 2: Filtrar rigurosamente en cascada sobre el pool de candidatos
+    std::vector<const Movie*> filteredResults;
+    
+    for (const Movie* moviePtr : basePool) {
+        const Movie& m = *moviePtr;
+
+        // Filtro por Género (ignora mayúsculas de manera simple con Utils)
+        if (query.genreFilter.empty() == false) {
+            if (Utils::cleanText(m.genre).find(Utils::cleanText(query.genreFilter)) == std::string::npos) {
+                continue; // No coincide, descartamos esta película
+            }
+        }
+
+        // Filtro por Director
+        if (query.directorFilter.empty() == false) {
+            if (Utils::cleanText(m.director).find(Utils::cleanText(query.directorFilter)) == std::string::npos) {
+                continue;
+            }
+        }
+
+        // Filtro por Año
+        if (query.yearFilter != 0) {
+            if (m.releaseYear != query.yearFilter) {
+                continue;
+            }
+        }
+
+        // Si pasó todos los filtros activos, califica para el resultado
+        filteredResults.push_back(moviePtr);
+    }
+
+    // Paso 3: Aplicamos un recorte manual respetando el límite pedido
+    if ((int)filteredResults.size() > limit) {
+        filteredResults.resize(limit);
+    }
+
+    return filteredResults;
 }

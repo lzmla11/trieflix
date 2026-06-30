@@ -5,6 +5,9 @@
 #include <cctype>
 #include "../include/Movie.h"
 #include "../include/SearchEngine.h"
+#include "../include/SessionManager.h"
+#include "../include/ConsoleNotificationSystem.h"
+#include "../include/MoviePrinter.h"
 
 using namespace std;
 
