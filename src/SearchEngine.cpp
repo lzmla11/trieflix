@@ -2,6 +2,7 @@
 #include "../include/CsvReader.h"
 #include "../include/Utils.h"
 #include <algorithm>
+#include <thread>
 #include <future>
 #include <iostream>
 
@@ -263,52 +264,81 @@ std::vector<const Movie*> SearchEngine::topMovies(
 std::vector<const Movie*> SearchEngine::searchAdvanced(const SearchQuery& query, int limit) const {
     std::vector<const Movie*> basePool;
 
-    // Paso 1: Obtener un set inicial de películas candidatas
+    // Obtención del pool base inicial (Igual que en el diseño del Builder)
     if (query.textKeyword.empty() == false) {
-        // Si hay palabra clave, usamos tu potente algoritmo indexado por SuffixTrie
-        basePool = this->searchText(query.textKeyword, 1000); 
+        basePool = this->searchText(query.textKeyword, 2000); 
     } else {
-        // Si no hay palabra clave, partimos de todas las películas del sistema
+        basePool.reserve(movies.size());
         for (const Movie& m : movies) {
             basePool.push_back(&m);
         }
     }
 
-    // Paso 2: Filtrar rigurosamente en cascada sobre el pool de candidatos
-    std::vector<const Movie*> filteredResults;
+    // --- DETECCIÓN DE NÚCLEOS DISPONIBLES ---
+    unsigned int numThreads = std::thread::hardware_concurrency();
+    if (numThreads == 0) numThreads = 2; // Resguardo en caso de que no se detecte
     
-    for (const Movie* moviePtr : basePool) {
-        const Movie& m = *moviePtr;
+    // Si hay muy pocas películas, no vale la pena abrir hilos (evitamos el overhead)
+    if (basePool.size() < 100) numThreads = 1;
 
-        // Filtro por Género (ignora mayúsculas de manera simple con Utils)
-        if (query.genreFilter.empty() == false) {
-            if (Utils::cleanText(m.genre).find(Utils::cleanText(query.genreFilter)) == std::string::npos) {
-                continue; // No coincide, descartamos esta película
+    // Vectores donde cada hilo guardará sus coincidencias de forma aislada e independiente
+    std::vector<std::vector<const Movie*>> threadResults(numThreads);
+    std::vector<std::future<void>> workers;
+
+    // Calculamos el tamaño de cada "bloque" de películas
+    size_t chunkSize = basePool.size() / numThreads;
+
+    for (unsigned int i = 0; i < numThreads; ++i) {
+        size_t startIdx = i * chunkSize;
+        // El último hilo se asegura de llevarse el residuo flotante de la división
+        size_t endIdx = (i == numThreads - 1) ? basePool.size() : startIdx + chunkSize;
+
+        // Lanzamos el hilo para procesar el bloque asignado
+        workers.push_back(std::async(std::launch::async, [this, &query, &basePool, &threadResults, i, startIdx, endIdx]() {
+            for (size_t k = startIdx; k < endIdx; ++k) {
+                const Movie& m = *basePool[k];
+
+                // Filtro por Género
+                if (query.genreFilter.empty() == false) {
+                    if (Utils::cleanText(m.genre).find(Utils::cleanText(query.genreFilter)) == std::string::npos) {
+                        continue;
+                    }
+                }
+
+                // Filtro por Director
+                if (query.directorFilter.empty() == false) {
+                    if (Utils::cleanText(m.director).find(Utils::cleanText(query.directorFilter)) == std::string::npos) {
+                        continue;
+                    }
+                }
+
+                // Filtro por Año
+                if (query.yearFilter != 0 && m.releaseYear != query.yearFilter) {
+                    continue;
+                }
+
+                // Si pasó los filtros del bloque, se guarda en el contenedor exclusivo de este hilo
+                threadResults[i].push_back(&m);
             }
-        }
-
-        // Filtro por Director
-        if (query.directorFilter.empty() == false) {
-            if (Utils::cleanText(m.director).find(Utils::cleanText(query.directorFilter)) == std::string::npos) {
-                continue;
-            }
-        }
-
-        // Filtro por Año
-        if (query.yearFilter != 0) {
-            if (m.releaseYear != query.yearFilter) {
-                continue;
-            }
-        }
-
-        // Si pasó todos los filtros activos, califica para el resultado
-        filteredResults.push_back(moviePtr);
+        }));
     }
 
-    // Paso 3: Aplicamos un recorte manual respetando el límite pedido
-    if ((int)filteredResults.size() > limit) {
-        filteredResults.resize(limit);
+    // Esperamos que todos los hilos terminen de filtrar sus respectivos bloques
+    for (auto& worker : workers) {
+        worker.get();
     }
 
-    return filteredResults;
+    // --- RECOLECCIÓN (Gather) ---
+    // Unimos los sub-vectores de cada hilo en un único vector final consolidado
+    std::vector<const Movie*> finalResults;
+    for (const auto& localVector : threadResults) {
+        finalResults.insert(finalResults.end(), localVector.begin(), localVector.end());
+    }
+
+    // Aplicamos el recorte del límite solicitado por la interfaz
+    if ((int)finalResults.size() > limit) {
+        finalResults.resize(limit);
+    }
+
+    return finalResults;
 }
