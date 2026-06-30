@@ -24,9 +24,14 @@ public:
     // Vinculación con el motor de búsqueda para modificar películas en caliente
     void setSearchEngine(SearchEngine* enginePointer);
 
-    // Métodos de Interacción con Películas (Explicicitos y claros)
+    // Métodos de Interacción con Películas (Explicitos y claros)
     void toggleWatchLater(int movieId);
     void giveLikeToMovie(int movieId);
+
+    // NUEVO: necesario para poder calcular recomendaciones basadas en los
+    // gustos del usuario. Guardamos el historial de IDs a los que dio like,
+    // sin duplicados, en el orden en que ocurrieron.
+    const std::vector<int>& getLikedMovieIds() const;
 
     // Métodos del patrón Observer para gestionar las subscripciones
     void attachObserver(MovieStateObserver* observer);
@@ -42,6 +47,9 @@ private:
 
     // Puntero al motor de búsqueda para poder alterar el vector de películas en memoria
     SearchEngine* searchEngine = nullptr;
+
+    // Historial de películas a las que el usuario actual les dio like
+    std::vector<int> likedMovieIds;
 
     // Lista de observadores suscritos
     std::vector<MovieStateObserver*> observers;

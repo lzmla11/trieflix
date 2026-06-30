@@ -1,9 +1,10 @@
 #include "../include/SessionManager.h"
+#include <algorithm>
 #include <iostream>
 
 // Implementación del acceso global
 SessionManager& SessionManager::getInstance() {
-    // Garatiza una única instancia persistente en toda la vida del programa
+    // Garantiza una única instancia persistente en toda la vida del programa
     static SessionManager instance;
     return instance;
 }
@@ -18,6 +19,8 @@ void SessionManager::loginUser(const std::string& username) {
 void SessionManager::logoutUser() {
     currentUsername = "";
     isLoggedIn = false;
+    // Al cerrar sesión, el historial de likes de este usuario ya no aplica
+    likedMovieIds.clear();
 }
 
 std::string SessionManager::getCurrentUser() const {
@@ -67,12 +70,24 @@ void SessionManager::giveLikeToMovie(int movieId) {
         if (currentMovie.id == movieId) {
             currentMovie.likes = currentMovie.likes + 1;
             std::cout << "  ¡Le diste un Like a la pelicula! Total de likes actuales: " << currentMovie.likes << "\n";
-            
-            // dispara la notificación 
+
+            // Guardamos este ID en el historial de gustos del usuario,
+            // solo si no estaba registrado todavia, para poder usarlo
+            // despues en el algoritmo de recomendaciones.
+            bool yaRegistrado = std::find(likedMovieIds.begin(), likedMovieIds.end(), movieId) != likedMovieIds.end();
+            if (yaRegistrado == false) {
+                likedMovieIds.push_back(movieId);
+            }
+
+            // dispara la notificación
             this->notifyLikeChanged(movieId, currentMovie.likes);
             return;
         }
     }
+}
+
+const std::vector<int>& SessionManager::getLikedMovieIds() const {
+    return likedMovieIds;
 }
 
 void SessionManager::attachObserver(MovieStateObserver* observer) {
@@ -87,7 +102,7 @@ void SessionManager::detachObserver(MovieStateObserver* observer) {
         if (observers[i] == observer) {
             // Lo eliminamos de la lista si lo encuentra
             observers.erase(observers.begin() + i);
-            return; 
+            return;
         }
     }
 }
