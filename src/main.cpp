@@ -379,7 +379,12 @@ void searchTagFlow(SearchEngine& engine) {
 
         vector<const Movie*> results = engine.searchByTag(tag, value, 1000);
 
-        string label = (opt == "1") ? "Titulo: " : (opt == "2") ? "Director: " : "Elenco: ";
+        string label;
+        if      (opt == "1") label = "Titulo: ";
+        else if (opt == "2") label = "Director: ";
+        else if (opt == "3") label = "Elenco: ";
+        else if (opt == "4") label = "Genero: ";
+        else                 label = "Anio: ";
         listFlow(engine, results, label + value);
         break;
     }
