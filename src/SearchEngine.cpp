@@ -13,11 +13,11 @@ bool SearchEngine::load(const std::string& filepath) {
     movies = reader.readMovies(filepath);
 
     if (movies.empty()) {
-        std::cerr << "No se cargaron peliculas.\\n";
+        std::cerr << "No se cargaron peliculas.\n";
         return false;
     }
 
-    std::cout << "Iniciando indexacion en paralelo (4 hilos)...\\n";
+    std::cout << "Iniciando indexacion en paralelo (4 hilos)...\n";
 
     // HILO 1: Indexar Títulos
     auto threadTitle = std::async(std::launch::async, [this]() {
@@ -67,7 +67,7 @@ bool SearchEngine::load(const std::string& filepath) {
     threadCast.get();
     threadGeneral.get();
 
-    std::cout << movies.size() << " peliculas indexadas en paralelo con exito.\\n";
+    std::cout << movies.size() << " peliculas indexadas en paralelo con exito.\n";
     return true;
 }
 
