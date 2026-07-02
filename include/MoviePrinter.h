@@ -13,7 +13,7 @@ public:
 };
 
 // --- COMPONENTE CONCRETO ---
-// Se encarga de la impresión básica (lo que antes hacía printCard en main.cpp)
+// Se encarga de la impresión básica 
 class BaseMoviePrinter : public MoviePrinter {
 public:
     void print(int index, const Movie& movie) const override;

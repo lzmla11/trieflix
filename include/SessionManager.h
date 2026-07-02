@@ -8,7 +8,7 @@
 
 class SessionManager {
 public:
-    // Método de acceso global al Singleton (Meyers' Singleton)
+    // Método de acceso global al Singleton 
     static SessionManager& getInstance();
 
     // Eliminamos la posibilidad de copiar la instancia para proteger el patrón
@@ -24,11 +24,11 @@ public:
     // Vinculación con el motor de búsqueda para modificar películas en caliente
     void setSearchEngine(SearchEngine* enginePointer);
 
-    // Métodos de Interacción con Películas (Explicitos y claros)
+    // Métodos de Interacción con Películas 
     void toggleWatchLater(int movieId);
     void giveLikeToMovie(int movieId);
 
-    // NUEVO: necesario para poder calcular recomendaciones basadas en los
+    // necesario para poder calcular recomendaciones basadas en los
     // gustos del usuario. Guardamos el historial de IDs a los que dio like,
     // sin duplicados, en el orden en que ocurrieron.
     const std::vector<int>& getLikedMovieIds() const;
@@ -38,7 +38,7 @@ public:
     void detachObserver(MovieStateObserver* observer);
 
 private:
-    // Constructor privado: nadie fuera de esta clase puede hacer un 'new SessionManager()'
+    // Constructor privado
     SessionManager() = default;
 
     // Atributos de la sesión

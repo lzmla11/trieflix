@@ -10,7 +10,7 @@ public:
     void onMovieLikeChanged(int movieId, int newLikes) override;
     void onMovieWatchLaterChanged(int movieId, bool isWatchLater) override;
 
-    // NUEVO: Funciones para que la interfaz controle las notificaciones
+    // Funciones para que la interfaz controle las notificaciones
     std::vector<std::string> obtenerNotificacionesPendientes() const;
     void limpiarNotificaciones();
 
