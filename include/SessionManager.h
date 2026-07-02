@@ -51,6 +51,9 @@ private:
     // Historial de películas a las que el usuario actual les dio like
     std::vector<int> likedMovieIds;
 
+    std::unordered_map<std::string, std::vector<int>> userWatchLaterMap;
+    std::unordered_map<std::string, std::vector<int>> userLikedMap;
+
     // Lista de observadores suscritos
     std::vector<MovieStateObserver*> observers;
 

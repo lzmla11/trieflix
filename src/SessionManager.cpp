@@ -13,13 +13,44 @@ void SessionManager::loginUser(const std::string& username) {
     if (username.empty() == false) {
         currentUsername = username;
         isLoggedIn = true;
+   
+	// Restauramos el Watch Later personal si el usuario ya habia iniciado sesion antes
+        if (searchEngine != nullptr && userWatchLaterMap.count(username) > 0) {
+            for (int movieId : userWatchLaterMap[username]) {
+                for (Movie& currentMovie : searchEngine->movies) {
+                    if (currentMovie.id == movieId) {
+                        currentMovie.watchLater = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Restauramos el historial de likes personales del usuario
+        if (userLikedMap.count(username) > 0) {
+            likedMovieIds = userLikedMap[username];
+        }
     }
 }
 
 void SessionManager::logoutUser() {
+    if (searchEngine != nullptr) {
+	// Guardamos qué películas tenía en Watch Later antes de limpiarlas
+        std::vector<int> watchLaterIds;
+        for (Movie& currentMovie : searchEngine->movies) {
+	    if (currentMovie.watchLater == true) {
+                watchLaterIds.push_back(currentMovie.id);
+            }
+            currentMovie.watchLater = false;
+        }
+        userWatchLaterMap[currentUsername] = watchLaterIds;
+    }
+
+    // Guardamos el historial de likes del usuario antes de limpiarlo
+    userLikedMap[currentUsername] = likedMovieIds;
+
     currentUsername = "";
     isLoggedIn = false;
-    // Al cerrar sesión, el historial de likes de este usuario ya no aplica
     likedMovieIds.clear();
 }
 

@@ -159,6 +159,9 @@ void listFlow(SearchEngine& engine, const vector<const Movie*>& list, const stri
         for (int i = start; i < end; i++) {
             const Movie& currentMovie = *list[i];
 
+	    // Numero visible para el usuario (1 al 5) 
+            int displayNumber = i - start + 1;
+
             // --- PATRON DECORATOR EN ACCION ---
             unique_ptr<MoviePrinter> dynamicPrinter = make_unique<BaseMoviePrinter>();
 
@@ -168,8 +171,7 @@ void listFlow(SearchEngine& engine, const vector<const Movie*>& list, const stri
             if (currentMovie.watchLater) {
                 dynamicPrinter = make_unique<WatchLaterMovieDecorator>(std::move(dynamicPrinter));
             }
-
-            dynamicPrinter->print(currentMovie.id, currentMovie);
+            dynamicPrinter->print(displayNumber, currentMovie);
             printSeparator();
         }
 
@@ -183,15 +185,23 @@ void listFlow(SearchEngine& engine, const vector<const Movie*>& list, const stri
         } else if ((opt == "P" || opt == "p") && page > 0) {
             page--;
         } else if (opt.size() >= 2 && (toupper(opt[0]) == 'V')) {
-            // Extraemos el ID que viene despues de la letra y el espacio
-            string idText = opt.substr(2);
+            string numberText = opt.substr(2);
             try {
-                int targetId = stoi(idText);
-                showMovieDetails(engine, targetId);
+                int displayNumber = stoi(numberText);
+                int maxInPage = end - start;
+
+                if (displayNumber >= 1 && displayNumber <= maxInPage) {
+                    // Mapeamos el numero visible al ID real de la pelicula
+                    int targetId = list[start + displayNumber - 1]->id;
+                    showMovieDetails(engine, targetId);
+                } else {
+                    cout << "  [!] Numero invalido. Elige entre 1 y " << maxInPage << ".\n";
+                    getInput("  Presiona Enter para continuar...");
+                }
             } catch (...) {
-                cout << "  [!] Formato invalido. Usa la letra, un espacio y el ID. Ej: V 42\n";
+                cout << "  [!] Formato invalido. Usa 'V' seguido de un numero. Ej: V 3\n";
                 getInput("  Presiona Enter para continuar...");
-            }
+            } 
         } else {
             cout << "  [!] Opcion invalida.\n";
             getInput("  Presiona Enter para continuar...");
@@ -424,6 +434,57 @@ void advancedSearchFlow(SearchEngine& engine) {
 }
 
 // =====================================================================
+// PROFILE FLOW 
+// =====================================================================
+
+void profileFlow(SearchEngine& engine) {
+    while (true) {
+        printHeader();
+        cout << "  [MI PERFIL - " << SessionManager::getInstance().getCurrentUser() << "]\n";
+        printSeparator();
+        cout << "  [1] Mi lista 'Ver mas tarde'\n";
+        cout << "  [2] Peliculas a las que di Like\n";
+        cout << "  [3] Recomendaciones para mi\n";
+        cout << "  [0] Volver al Menu Principal\n";
+        printSeparator();
+
+        string opt = getInput("  Opcion: ");
+
+        if (opt == "0") {
+            return;
+
+        } else if (opt == "1") {
+            vector<const Movie*> watchLaterList;
+            for (const Movie& currentMovie : engine.movies) {
+                if (currentMovie.watchLater) {
+                    watchLaterList.push_back(&currentMovie);
+                }
+            }
+            listFlow(engine, watchLaterList, "Mi lista: Ver mas tarde");
+
+        } else if (opt == "2") {
+            const vector<int>& likedIds = SessionManager::getInstance().getLikedMovieIds();
+            vector<const Movie*> likedList;
+            for (const Movie& currentMovie : engine.movies) {
+                bool estaLikeada = find(likedIds.begin(), likedIds.end(), currentMovie.id) != likedIds.end();
+                if (estaLikeada) {
+                    likedList.push_back(&currentMovie);
+                }
+            }
+            listFlow(engine, likedList, "Peliculas que me gustaron");
+
+        } else if (opt == "3") {
+            vector<const Movie*> recommendations = buildLikedRecommendations(engine, 20);
+            listFlow(engine, recommendations, "Recomendado para ti");
+
+        } else {
+            cout << "  [!] Opcion invalida.\n";
+            getInput("  Presiona Enter para continuar...");
+        }
+    }
+}
+
+// =====================================================================
 //  MENU PRINCIPAL
 // =====================================================================
 
@@ -438,8 +499,9 @@ bool mainMenuFlow(SearchEngine& engine, ConsoleNotificationSystem& notifier) {
         printSeparator();
         cout << "  [1] Busqueda Rapida (Texto)\n";
         cout << "  [2] Busqueda por Tag Especifico\n";
-        cout << "  [3] Busqueda Avanzada (Patron Builder + Paralelismo)\n";
-        cout << "  [4] Cerrar Sesion\n";
+        cout << "  [3] Busqueda Avanzada\n";
+        cout << "  [4] Mi Perfil\n";
+	cout << "  [5] Cerrar Sesion\n";
         cout << "  [0] Salir del Programa\n";
         printSeparator();
 
@@ -459,6 +521,8 @@ bool mainMenuFlow(SearchEngine& engine, ConsoleNotificationSystem& notifier) {
         } else if (opt == "3") {
             advancedSearchFlow(engine);
         } else if (opt == "4") {
+	    profileFlow(engine); 
+	} else if (opt == "5") {
             // Patron Observer: al hacer logout, dejamos de escuchar
             // notificaciones de esta sesion y volvemos a pedir login
             SessionManager::getInstance().detachObserver(&notifier);
