@@ -19,7 +19,7 @@ El proyecto está organizado en módulos desacoplados, aplicando varios patrones
 
 | Componente | Responsabilidad | Patrón |
 |---|---|---|
-| `SuffixTrie` | Indexación y búsqueda por sufijos/prefijos en O(longitud) | Trie |
+| `SuffixTrie` | Indexación y búsqueda por sufijos/prefijos en O(logN) | Trie |
 | `SearchEngine` | Orquesta la carga de datos y las búsquedas sobre los tries | — |
 | `SearchQuery` / `SearchQueryBuilder` | Construcción fluida de consultas con múltiples filtros | Builder |
 | `SessionManager` | Gestión de la sesión del usuario (único, global) | Singleton |
