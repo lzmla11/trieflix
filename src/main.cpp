@@ -63,11 +63,9 @@ void mostrarNotificacionesSistema(ConsoleNotificationSystem& sistemaNotificacion
 
 // Muestra la ficha completa de una película y, desde ahí mismo, deja que
 // el usuario decida si quiere darle Like o agregarla/quitarla de
-// 'Ver mas tarde'. Antes esta función existía pero nunca se llamaba desde
-// ningún lado; ahora es el único lugar donde se hacen esas acciones.
+// 'Ver mas tarde'. 
 void showMovieDetails(SearchEngine& engine, int movieId) {
-    // Buscamos la película en el vector real del engine (no en un puntero
-    // que pudo haber quedado desactualizado por otra búsqueda previa)
+    // Buscamos la película en el vector real del engine 
     Movie* movieFound = nullptr;
     for (Movie& currentMovie : engine.movies) {
         if (currentMovie.id == movieId) {
@@ -135,9 +133,7 @@ void showMovieDetails(SearchEngine& engine, int movieId) {
 // =====================================================================
 
 // Muestra una lista de películas, paginada de 5 en 5. Desde aquí el
-// usuario puede entrar al detalle de una película con [V <id>]; el Like y
-// el Watch Later directos se hicieron a un lado a propósito, porque el
-// enunciado pide que esas acciones ocurran luego de ver la sinopsis.
+// usuario puede entrar al detalle de una película
 void listFlow(SearchEngine& engine, const vector<const Movie*>& list, const string& title) {
     if (list.empty()) {
         cout << "\n  [!] No se encontraron resultados.\n";
@@ -289,7 +285,7 @@ vector<const Movie*> buildLikedRecommendations(SearchEngine& engine, int limit) 
 // =====================================================================
 
 // Esta pantalla se muestra una sola vez, justo despues del login, antes
-// de entrar al menu principal. Cumple con el requisito de mostrar la
+// de entrar al menu principal.Para mostrar la
 // lista de 'Ver mas tarde' y las recomendaciones basadas en los Likes.
 void showStartupScreen(SearchEngine& engine) {
     printHeader();

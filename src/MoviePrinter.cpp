@@ -11,7 +11,7 @@ std::string truncateText(const std::string& text, size_t maxLength) {
 
 // --- IMPRESIÓN BASE CONCRETA ---
 void BaseMoviePrinter::print(int index, const Movie& movie) const {
-    // Dibujamos exactamente la estructura limpia que ya tenías en tu main.cpp
+    // Dibujamos la estructura limpia 
     std::cout << " [" << index << "] " << truncateText(movie.title, 44)
               << " (" << movie.releaseYear << ")\n";
               

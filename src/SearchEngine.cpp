@@ -233,7 +233,7 @@ std::vector<const Movie*> SearchEngine::topMovies(
     }
 
     // Paso 2: Ordenamos de mayor a menor puntuación y desempatamos por LIKES
-    // NOTA: Usamos [this] al inicio para que la lambda tenga acceso al vector 'movies'
+    // nota: Usamos this al inicio para que la lambda tenga acceso al vector 'movies'
     std::sort(ranked.begin(), ranked.end(),
          [this](const std::pair<double, int>& a, const std::pair<double, int>& b) {
              // Criterio principal: Mayor puntaje de palabras clave primero

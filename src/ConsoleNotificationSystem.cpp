@@ -6,7 +6,7 @@ void ConsoleNotificationSystem::onMovieLikeChanged(int movieId, int newLikes) {
     std::string mensajeLog = "[NOTIFICACION] La pelicula con ID " + std::to_string(movieId) 
                              + " ahora tiene " + std::to_string(newLikes) + " likes.";
     
-    // Lo guardamos silenciosamente en el historial
+    // Y se guardaen el historial
     notificacionesPendientes.push_back(mensajeLog);
 }
 
@@ -20,7 +20,7 @@ void ConsoleNotificationSystem::onMovieWatchLaterChanged(int movieId, bool isWat
 
     std::string mensajeLog = "[NOTIFICACION] La pelicula con ID " + std::to_string(movieId) + " fue " + estado;
     
-    // Lo guardamos silenciosamente en el historial
+    // Se guarda en el historial
     notificacionesPendientes.push_back(mensajeLog);
 }
 
